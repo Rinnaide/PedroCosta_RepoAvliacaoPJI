@@ -7,7 +7,6 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-// DTO responsável por receber os dados de cadastro de um Professor vindos da requisição HTTP.
 public record DadosCadastroProfessor(
 
     @NotBlank

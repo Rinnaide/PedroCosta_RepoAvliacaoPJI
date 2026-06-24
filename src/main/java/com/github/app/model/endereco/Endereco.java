@@ -9,7 +9,6 @@ import lombok.*;
 @NoArgsConstructor
 @Embeddable
 public class Endereco {
-    // Atributos -> Características -> variáveis
     private String logradouro;
     private String bairro;
     private String cep;
@@ -17,7 +16,6 @@ public class Endereco {
     private String cidade;
     private String uf; 
 
-    // Constructor recebendo os dados convertidos DTO
     public Endereco(DadosCadastroEndereco dados) {
         this.logradouro = dados.logradouro();
         this.bairro = dados.bairro();
@@ -27,7 +25,7 @@ public class Endereco {
         this.uf = dados.uf();
     }
 
-    // Método para atualizar as informações do endereco, recebendo um objeto do tipo DadosCadastroEndereco e atualizando os atributos do endereco com os dados recebidos.
+
     public void atualizarInformacoes(DadosCadastroEndereco dados) {
         if(dados.logradouro() != null) {
             this.logradouro = dados.logradouro();
