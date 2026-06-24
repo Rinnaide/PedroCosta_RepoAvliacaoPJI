@@ -268,7 +268,4 @@ java -jar target/*.jar
 | Sintoma | Causa provável | Solução |
 |---------|---------------|---------|
 | Porta `8080` já em uso | Outra instância rodando | `Ctrl+C` no terminal anterior ou mude a porta em `application.properties`: `server.port=8081` |
-| `BUILD FAILURE` ao compilar | Erro de compilação nas modificações | Verifique o log no terminal e confira os arquivos alterados |
-| `Table 'alunos' not found` | Banco não criado/migrado | Confirme as configurações de `spring.jpa.hibernate.ddl-auto` em `application.properties` |
-
 ---
