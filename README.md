@@ -183,3 +183,92 @@ src/main/java/com/github/app/
 </details>
 
 ---
+
+## ▶️ Como Rodar o Projeto
+
+> Após aplicar as modificações, siga um dos métodos abaixo para iniciar a aplicação.
+
+---
+
+### ✅ Pré-requisitos
+
+Antes de rodar, certifique-se de ter instalado:
+
+| Ferramenta | Versão recomendada |
+|------------|--------------------|
+| Java (JDK) | 17 ou superior |
+| Maven | 3.8 ou superior |
+| VS Code | Versão atual |
+| Extensão [Spring Boot Extension Pack](https://marketplace.visualstudio.com/items?itemName=vmware.vscode-boot-dev-pack) | Instalada |
+
+---
+
+### Método 1 — Pelo VS Code (recomendado)
+
+1. Abra o projeto no VS Code (`File → Open Folder`)
+2. Aguarde o VS Code indexar o projeto (barra inferior ficará estável)
+3. Navegue até o arquivo:
+   ```
+   src/main/java/com/github/app/AppApplication.java
+   ```
+4. Com o arquivo aberto, clique no botão **▶ Run** que aparece acima do método `main`, ou pressione:
+   ```
+   Ctrl + F5
+   ```
+5. Acompanhe o log no terminal integrado — a aplicação estará pronta quando aparecer:
+   ```
+   Started AppApplication in X.XXX seconds
+   ```
+
+> 💡 **Dica:** o painel **Spring Boot Dashboard** (ícone de folha na barra lateral) lista a aplicação e permite iniciar/parar com um clique.
+
+---
+
+### Método 2 — Pelo Terminal Integrado (Maven)
+
+Abra o terminal no VS Code (`` Ctrl + ` ``) e execute:
+
+```bash
+# Compilar e iniciar
+./mvnw spring-boot:run
+```
+
+> No Windows, se `./mvnw` não funcionar, use:
+> ```cmd
+> mvnw.cmd spring-boot:run
+> ```
+
+---
+
+### Método 3 — Build + execução do JAR
+
+Use este método para gerar um artefato final ou simular ambiente de produção:
+
+```bash
+# 1. Gerar o JAR (pula os testes para agilizar)
+./mvnw clean package -DskipTests
+
+# 2. Executar o JAR gerado
+java -jar target/*.jar
+```
+
+---
+
+### 🛑 Parando a aplicação
+
+| Ambiente | Como parar |
+|----------|------------|
+| VS Code (Run) | Clique no ícone ⏹ no painel de debug ou no Spring Boot Dashboard |
+| Terminal | `Ctrl + C` |
+
+---
+
+### ⚠️ Problemas comuns
+
+| Sintoma | Causa provável | Solução |
+|---------|---------------|---------|
+| Porta `8080` já em uso | Outra instância rodando | `Ctrl+C` no terminal anterior ou mude a porta em `application.properties`: `server.port=8081` |
+| `BUILD FAILURE` ao compilar | Erro de compilação nas modificações | Verifique o log no terminal e confira os arquivos alterados |
+| `Table 'alunos' not found` | Banco não criado/migrado | Confirme as configurações de `spring.jpa.hibernate.ddl-auto` em `application.properties` |
+
+---
