@@ -183,13 +183,3 @@ src/main/java/com/github/app/
 </details>
 
 ---
-
-## 🗂️ Resumo por Categoria de Bug
-
-| Categoria | Ocorrências | Arquivos |
-|-----------|:-----------:|----------|
-| Tipo de dado incorreto (`String` vs `Integer`) | 2 | `AlunoController`, `MatriculaController` |
-| Verbo HTTP errado | 1 | `AlunoController` |
-| Tabela mapeada incorretamente | 1 | `Aluno` |
-| Campos invertidos / atribuição errada | 2 | `DadosListagemAluno`, `Professor` |
-| Transação ausente | 1 | `ProfessorController` |
