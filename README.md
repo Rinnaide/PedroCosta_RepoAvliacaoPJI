@@ -1,9 +1,9 @@
-# 🏫 Caça aos Erros — Sistema Escolar de Cadastro
+# 🏫 Caça aos Erros: Sistema Escolar de Cadastro
 **Instituição:** Senac  
 **Avaliação:** Projeto Integrador  
 **Aluno:** Pedro Costa  
 ---
-# 📋 README — Modificações do Projeto
+# 📋 Modificações do Projeto
 > Registro das correções aplicadas ao projeto, com descrição objetiva do que foi alterado e o motivo técnico de cada mudança.
 ---
 ## 📂 Arquivos Modificados
@@ -125,3 +125,4 @@ src/main/java/com/github/app/
 │       ├── Endereco.java                 📄 referenciado
 │       └── DadosCadastroEndereco.java    📄 referenciado
 ```
+</details>
