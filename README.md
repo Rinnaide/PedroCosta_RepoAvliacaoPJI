@@ -12,102 +12,141 @@
 
 ---
 
-## 📂 Arquivos Modificados
+## 📂 Visão Geral das Alterações
 
-| # | Arquivo | Tipo de Correção |
-|---|---------|-----------------|
-| 1 | `controller/AlunoController.java` | Verbo HTTP e tipo de parâmetro |
-| 2 | `controller/ProfessorController.java` | Transação ausente |
-| 3 | `controller/MatriculaController.java` | Tipo de ID incompatível |
-| 4 | `model/aluno/Aluno.java` | Mapeamento de tabela errado |
-| 5 | `model/aluno/DadosListagemAluno.java` | Campos invertidos no DTO |
-| 6 | `model/professor/Professor.java` | Campo errado no update |
+| Alteração | Arquivo | O que foi corrigido |
+|:---------:|---------|---------------------|
+| 1 | `controller/AlunoController.java` | Verbo HTTP `@PostMapping` → `@PutMapping` no endpoint de atualização |
+| 2 | `controller/AlunoController.java` | Tipo do `@PathVariable` de `String` → `Integer` no método `excluir` |
+| 3 | `controller/ProfessorController.java` | Adição de `@Transactional` no método `cadastrar` |
+| 4 | `controller/MatriculaController.java` | Remoção de `.toString()` no `getReferenceById` do `alunoRepository` |
+| 5 | `controller/MatriculaController.java` | Correção do nome do `@PathVariable` de `ids` → `id` no método `excluir` |
+| 6 | `model/aluno/Aluno.java` | Mapeamento `@Table(name = "professores")` → `@Table(name = "alunos")` |
+| 7 | `model/aluno/AlunoRepository.java` | Tipagem do repositório de `JpaRepository<Aluno, String>` → `JpaRepository<Aluno, Integer>` |
+| 8 | `model/aluno/DadosListagemAluno.java` | Campos `nome` e `email` invertidos no construtor do DTO |
+| 9 | `model/professor/Professor.java` | Atribuição de `this.nome` → `this.email` no método `atualizarInformacoes` |
 
 ---
 
 ## 🔧 Detalhamento das Alterações
 
-### 1 · `AlunoController.java`
+---
 
-**Caminho:** `src/main/java/com/github/app/controller/AlunoController.java`
+### Alteração 1 · Verbo HTTP incorreto em `AlunoController`
 
-#### Alterações
+**Arquivo:** `src/main/java/com/github/app/controller/AlunoController.java`  
+**Método:** `atualizar(...)`
 
 ```diff
 - @PostMapping
 + @PutMapping
-  public ResponseEntity atualizar(...) { ... }
-
-- public ResponseEntity excluir(@PathVariable String id) { ... }
-+ public ResponseEntity excluir(@PathVariable Integer id) { ... }
+  @Transactional
+  public void atualizar(@RequestBody DadosAtualizacaoAluno dados) { ... }
 ```
 
-#### Motivo
-
-- **`@PostMapping → @PutMapping`** — usar `POST` no endpoint de atualização gerava conflito de roteamento com o endpoint de cadastro, pois ambos compartilhavam o mesmo caminho base e o mesmo verbo HTTP.
-- **`String → Integer` no `@PathVariable`** — o campo `id` da entidade `Aluno` é do tipo `Integer`. Receber o parâmetro como `String` quebrava a chamada de `repository.deleteById(id)` por incompatibilidade de tipos.
+**Motivo:** usar `@PostMapping` no endpoint de atualização gerava conflito direto de roteamento com o endpoint de cadastro, pois ambos compartilhavam o mesmo caminho base e o mesmo verbo HTTP, tornando a rota de atualização inacessível.
 
 ---
 
-### 2 · `ProfessorController.java`
+### Alteração 2 · Tipo do `@PathVariable` incorreto em `AlunoController`
 
-**Caminho:** `src/main/java/com/github/app/controller/ProfessorController.java`
-
-#### Alterações
+**Arquivo:** `src/main/java/com/github/app/controller/AlunoController.java`  
+**Método:** `excluir(...)`
 
 ```diff
+- public void excluir(@PathVariable String id) {
++ public void excluir(@PathVariable Integer id) {
+      repository.deleteById(id);
+  }
+```
+
+**Motivo:** o campo `id` da entidade `Aluno` é do tipo `Integer`. Receber o parâmetro como `String` causava incompatibilidade de tipos na chamada de `repository.deleteById(id)`, gerando erro em tempo de execução.
+
+---
+
+### Alteração 3 · `@Transactional` ausente em `ProfessorController`
+
+**Arquivo:** `src/main/java/com/github/app/controller/ProfessorController.java`  
+**Método:** `cadastrar(...)`
+
+```diff
+  @PostMapping
 + @Transactional
-  public ResponseEntity cadastrar(...) { ... }
+  public void cadastrar(@RequestBody DadosCadastroProfessor dados) {
+      repository.save(new Professor(dados));
+  }
 ```
 
-#### Motivo
-
-- A ausência de `@Transactional` deixava a operação de persistência fora de uma transação gerenciada, podendo causar inconsistência no banco em caso de falha.
+**Motivo:** sem `@Transactional`, a operação de `save` era executada fora de um contexto transacional gerenciado pelo Spring, podendo causar falhas silenciosas de persistência em cenários de erro.
 
 ---
 
-### 3 · `MatriculaController.java`
+### Alteração 4 · Conversão desnecessária para `String` em `MatriculaController`
 
-**Caminho:** `src/main/java/com/github/app/controller/MatriculaController.java`
-
-#### Alterações
+**Arquivo:** `src/main/java/com/github/app/controller/MatriculaController.java`  
+**Método:** `cadastrar(...)`
 
 ```diff
-- alunoRepository.getReferenceById(dados.alunoId().toString())
-+ alunoRepository.getReferenceById(dados.alunoId())
-
-- matriculaRepository.deleteById(id.toString())
-+ matriculaRepository.deleteById(id)
+- Aluno aluno = alunoRepository.getReferenceById(dados.alunoId().toString());
++ Aluno aluno = alunoRepository.getReferenceById(dados.alunoId());
 ```
 
-#### Motivo
-
-- `AlunoRepository` usa `Integer` como tipo de ID. Converter para `String` via `.toString()` tornava a chamada incompatível com a assinatura do repositório, quebrando tanto a busca por referência quanto a remoção.
+**Motivo:** `AlunoRepository` é tipado com `Integer` como chave. Converter o ID para `String` via `.toString()` tornava a chamada incompatível com a assinatura do repositório, quebrando o acesso à referência do aluno.
 
 ---
 
-### 4 · `Aluno.java`
+### Alteração 5 · Nome do `@PathVariable` não corresponde à rota em `MatriculaController`
 
-**Caminho:** `src/main/java/com/github/app/model/aluno/Aluno.java`
-
-#### Alterações
+**Arquivo:** `src/main/java/com/github/app/controller/MatriculaController.java`  
+**Método:** `excluir(...)`
 
 ```diff
+  @DeleteMapping("/{id}")
+  @Transactional
+- public void excluir(@PathVariable Integer ids) {
+-     repository.deleteById(ids);
++ public void excluir(@PathVariable Integer id) {
++     repository.deleteById(id);
+  }
+```
+
+**Motivo:** o nome `ids` não correspondia ao template `{id}` da URL. O Spring não conseguia fazer o binding do parâmetro, causando falha na exclusão de matrículas.
+
+---
+
+### Alteração 6 · Entidade `Aluno` mapeada para tabela errada
+
+**Arquivo:** `src/main/java/com/github/app/model/aluno/Aluno.java`
+
+```diff
+  @Entity
 - @Table(name = "professores")
 + @Table(name = "alunos")
+  public class Aluno { ... }
 ```
 
-#### Motivo
-
-- A entidade `Aluno` estava mapeada para a tabela `professores`. Isso fazia com que todas as operações de leitura e escrita de alunos fossem direcionadas à tabela errada, corrompendo os dados.
+**Motivo:** com o mapeamento errado, todas as operações de leitura e escrita de alunos eram direcionadas à tabela `professores`, corrompendo os dados e misturando registros de entidades diferentes.
 
 ---
 
-### 5 · `DadosListagemAluno.java`
+### Alteração 7 · Tipagem do ID incorreta em `AlunoRepository`
 
-**Caminho:** `src/main/java/com/github/app/model/aluno/DadosListagemAluno.java`
+**Arquivo:** `src/main/java/com/github/app/model/aluno/AlunoRepository.java`
 
-#### Alterações
+```diff
+- public interface AlunoRepository extends JpaRepository<Aluno, String> {
++ public interface AlunoRepository extends JpaRepository<Aluno, Integer> {
+  }
+```
+
+**Motivo:** o campo `id` da entidade `Aluno` é declarado como `Integer`. Usar `String` na assinatura do repositório gerava incompatibilidade de tipos em todas as operações que dependiam do ID, incluindo buscas e exclusões nos controllers.
+
+---
+
+### Alteração 8 · Campos `nome` e `email` invertidos em `DadosListagemAluno`
+
+**Arquivo:** `src/main/java/com/github/app/model/aluno/DadosListagemAluno.java`  
+**Método:** construtor `DadosListagemAluno(Aluno aluno)`
 
 ```diff
   public DadosListagemAluno(Aluno aluno) {
@@ -118,17 +157,14 @@
   }
 ```
 
-#### Motivo
-
-- Os campos `nome` e `email` estavam invertidos no construtor do DTO, fazendo com que a API retornasse o JSON com os valores trocados.
+**Motivo:** os campos estavam trocados no construtor do DTO, fazendo com que a API retornasse o JSON com `nome` e `email` com os valores invertidos para todos os alunos listados.
 
 ---
 
-### 6 · `Professor.java`
+### Alteração 9 · Atribuição no campo errado em `Professor`
 
-**Caminho:** `src/main/java/com/github/app/model/professor/Professor.java`
-
-#### Alterações
+**Arquivo:** `src/main/java/com/github/app/model/professor/Professor.java`  
+**Método:** `atualizarInformacoes(DadosAtualizacaoProfessor dados)`
 
 ```diff
   public void atualizarInformacoes(DadosAtualizacaoProfessor dados) {
@@ -138,9 +174,7 @@
   }
 ```
 
-#### Motivo
-
-- O método sobrescrevia `this.nome` ao tentar atualizar o e-mail, deixando `this.email` inalterado e corrompendo o nome do professor silenciosamente.
+**Motivo:** ao atualizar o e-mail, o código sobrescrevia `this.nome` com o valor do e-mail, corrompendo o nome do professor silenciosamente e deixando o campo `this.email` sempre inalterado.
 
 ---
 
@@ -152,20 +186,20 @@
 ```
 src/main/java/com/github/app/
 ├── controller/
-│   ├── AlunoController.java              ✏️ modificado
-│   ├── ProfessorController.java          ✏️ modificado
-│   └── MatriculaController.java          ✏️ modificado
+│   ├── AlunoController.java              ✏️ modificado  (alterações 1, 2)
+│   ├── ProfessorController.java          ✏️ modificado  (alteração 3)
+│   └── MatriculaController.java          ✏️ modificado  (alterações 4, 5)
 │
 ├── model/
 │   ├── aluno/
-│   │   ├── Aluno.java                    ✏️ modificado
-│   │   ├── AlunoRepository.java          📄 referenciado
-│   │   ├── DadosListagemAluno.java       ✏️ modificado
+│   │   ├── Aluno.java                    ✏️ modificado  (alteração 6)
+│   │   ├── AlunoRepository.java          ✏️ modificado  (alteração 7)
+│   │   ├── DadosListagemAluno.java       ✏️ modificado  (alteração 8)
 │   │   ├── DadosCadastroAluno.java       📄 referenciado
 │   │   └── DadosAtualizacaoAluno.java    📄 referenciado
 │   │
 │   ├── professor/
-│   │   ├── Professor.java                ✏️ modificado
+│   │   ├── Professor.java                ✏️ modificado  (alteração 9)
 │   │   ├── ProfessorRepository.java      📄 referenciado
 │   │   ├── DadosCadastroProfessor.java   📄 referenciado
 │   │   ├── DadosAtualizacaoProfessor.java 📄 referenciado
@@ -268,4 +302,5 @@ java -jar target/*.jar
 | Sintoma | Causa provável | Solução |
 |---------|---------------|---------|
 | Porta `8080` já em uso | Outra instância rodando | `Ctrl+C` no terminal anterior ou mude a porta em `application.properties`: `server.port=8081` |
+
 ---
