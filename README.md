@@ -220,7 +220,7 @@ src/main/java/com/github/app/
 
 ## ▶️ Como Rodar o Projeto
 
-> Após aplicar as modificações, siga um dos métodos abaixo para iniciar a aplicação.
+> Siga um dos métodos abaixo para iniciar a aplicação.
 
 ---
 
